@@ -87,7 +87,6 @@
     <Compile Include="Game\Packet\SessionStateCommandFilter.cs" />
     <Compile Include="Game\TaskExecutor.cs" />
     <Compile Include="Game\GameObject.cs" />
-    <Compile Include="Game\MessageAttribute.cs" />
     <Compile Include="Game\ServerToServerManager.cs" />
     <Compile Include="Network\PacketCommandBase.cs" />
     <Compile Include="Network\PacketReceiveFilter.cs" />
