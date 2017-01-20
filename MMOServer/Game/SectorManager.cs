@@ -73,7 +73,7 @@ namespace MMOServer.Game
 
 		private LinkedList<GameObject> GetSector(Vector3 position)
 		{
-			int x; 
+			int x;
 			int z;
 			GetSectorCoordinate(position, out x, out z);
 
@@ -95,7 +95,7 @@ namespace MMOServer.Game
 			foreach (GameObject gameObject in m_sector[x][z])
 			{
 				action(gameObject);
-			}	
+			}
 		}
 
 		public SortedSet<Vector2> GetArroundSectorSet(int x, int z)
@@ -133,7 +133,7 @@ namespace MMOServer.Game
 
 			return GetArroundSectorSet(x, z);
 		}
-		
+
 		public int Enter(GameObject gameObject)
 		{
 			var sector = GetSector(gameObject.Position);
@@ -157,6 +157,7 @@ namespace MMOServer.Game
 
 			m_sector[x][z].AddLast(gameObject);
 
+			Console.WriteLine(string.Format("enter({0}, {1})", x, z));
 			return m_sector[x][z].Count;
 		}
 
@@ -171,6 +172,8 @@ namespace MMOServer.Game
 
 			sector.Remove(gameObject);
 
+			Console.WriteLine(string.Format("leave"));
+
 			return sector.Count;
 		}
 
@@ -182,6 +185,8 @@ namespace MMOServer.Game
 			}
 
 			m_sector[x][z].Remove(gameObject);
+
+			Console.WriteLine(string.Format("leave({0}, {1})", x, z));
 
 			return m_sector[x][z].Count;
 		}
@@ -208,7 +213,7 @@ namespace MMOServer.Game
 			int z;
 			GetSectorCoordinate(gameObject, out x, out z);
 
-            if (!CheckCoordinateValidation(x, z))
+			if (!CheckCoordinateValidation(x, z))
 			{
 				return;
 			}
@@ -279,15 +284,15 @@ namespace MMOServer.Game
 			x = (int)(position.X / m_sectorSize);
 			z = (int)(position.Z / m_sectorSize);
 		}
-				
-        public void ClearSector(int x, int z, List<GameObject> removedObjList)
+
+		public void ClearSector(int x, int z, List<GameObject> removedObjList)
 		{
-            if (!CheckCoordinateValidation(x, z))
+			if (!CheckCoordinateValidation(x, z))
 			{
 				return;
 			}
 
-            removedObjList.AddRange(m_sector[x][z]);
+			removedObjList.AddRange(m_sector[x][z]);
 			m_sector[x][z].Clear();
 		}
 	}

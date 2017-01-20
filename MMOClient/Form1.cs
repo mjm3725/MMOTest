@@ -11,7 +11,7 @@ namespace MMOClient
 	{
 		public int SizeX = 500;
 		public int SizeY = 500;
-        public int SectorSize = 20;
+		public int SectorSize = 20;
 
 		private GameClient m_gameClient = new GameClient();
 		private long m_lastTick = DateTime.Now.Ticks;
@@ -27,12 +27,12 @@ namespace MMOClient
 
 		private void Form1_Paint(object sender, PaintEventArgs e)
 		{
-            for (int x = 0; x <= SizeX; x += SectorSize)
+			for (int x = 0; x <= SizeX; x += SectorSize)
 			{
 				e.Graphics.DrawLine(new Pen(Color.Black), x, 0, x, SizeX);
 			}
 
-            for (int y = 0; y <= SizeY; y += SectorSize)
+			for (int y = 0; y <= SizeY; y += SectorSize)
 			{
 				e.Graphics.DrawLine(new Pen(Color.Black), 0, y, SizeY, y);
 			}
@@ -48,6 +48,8 @@ namespace MMOClient
 				{
 					e.Graphics.FillEllipse(new SolidBrush(Color.DodgerBlue), gameObjectInfo.Pos.X - 2, gameObjectInfo.Pos.Z - 2, 5, 5);
 				}
+
+				index++;
 			}
 		}
 
@@ -66,15 +68,18 @@ namespace MMOClient
 		{
 			m_gameClient.LogAction = (s) =>
 									 {
-										 listBox1.Items.Add(s);
-										 listBox1.Refresh();
+										 textBoxLog.AppendText(s + "\n");
 									 };
-			m_gameClient.Connect();
 		}
 
 		private void Form1_MouseClick(object sender, MouseEventArgs e)
 		{
 			m_gameClient.Move(e.X, e.Y);
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			m_gameClient.Connect(int.Parse(textBox1.Text));
 		}
 	}
 }

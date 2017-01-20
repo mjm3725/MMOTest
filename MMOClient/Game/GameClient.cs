@@ -13,10 +13,7 @@ namespace MMOClient.Game
 {
 	class GameClient : ITcpClientConnectionReceiver
 	{
-        private const int MoveSpeed = 10;
-		private const int HeaderSize = 4;
-		private const int PacketLengthSize = 2;
-		private const int CommandSize = 2;
+		private const int MoveSpeed = 20;
 
 		private TcpClientConnection m_connection;
 		private int m_id;
@@ -51,10 +48,10 @@ namespace MMOClient.Game
 			Send(CSPacketCommand.CSPkReqMove, csPkReqMove);
 		}
 
-		public void Connect()
+		public void Connect(int port)
 		{
 			Random r = new Random((int)DateTime.Now.Ticks);
-			m_connection.Connect(IPAddress.Parse("127.0.0.1"), r.Next(0, 2) == 0 ? 5000 : 5001);
+			m_connection.Connect(IPAddress.Parse("127.0.0.1"), port);
 		}
 
 		public void Update(float elapsedTime)
@@ -99,24 +96,21 @@ namespace MMOClient.Game
 		{
 			while (true)
 			{
-				if (queue.Size() >= PacketLengthSize)
+				if (queue.Size() >= 6)
 				{
-					byte[] buf = new byte[PacketLengthSize];
+					byte[] buf = new byte[6];
 
-					queue.Peek(ref buf, PacketLengthSize);
+					queue.Peek(ref buf, 6);
 
-					int packetLength = BitConverter.ToInt16(buf, 0);
+					int bodyLength = BitConverter.ToInt32(buf, 2);
+					int totalSize = bodyLength + 6;
 
-					if (queue.Size() >= packetLength)
+					if (queue.Size() >= totalSize)
 					{
-						queue.Seek(PacketLengthSize); // command 위치로 이동
+						buf = new byte[totalSize];
+						queue.Read(ref buf, totalSize);
 
-						int size = packetLength - PacketLengthSize;
-
-						buf = new byte[size];
-						queue.Read(ref buf, size);
-
-						DispatchPacket(buf, size);
+						DispatchPacket(buf, totalSize);
 					}
 					else
 					{
@@ -151,16 +145,17 @@ namespace MMOClient.Game
 
 			if (stream.Length > 0)
 			{
-				sendBuf = new byte[stream.Length + HeaderSize];
-				Buffer.BlockCopy(stream.GetBuffer(), 0, sendBuf, HeaderSize, (int)stream.Length);
+				sendBuf = new byte[stream.Length + 6];
+				Buffer.BlockCopy(stream.GetBuffer(), 0, sendBuf, 6, (int)stream.Length);
 			}
 			else
 			{
-				sendBuf = new byte[HeaderSize];
+				sendBuf = new byte[6];
 			}
 
-			Buffer.BlockCopy(BitConverter.GetBytes(sendBuf.Length), 0, sendBuf, 0, PacketLengthSize);
-			Buffer.BlockCopy(BitConverter.GetBytes((ushort)command), 0, sendBuf, PacketLengthSize, CommandSize);
+			Buffer.BlockCopy(BitConverter.GetBytes((ushort)command), 0, sendBuf, 0, 2);
+			Buffer.BlockCopy(BitConverter.GetBytes(stream.Length), 0, sendBuf, 2, 4);
+			
 
 			return m_connection.Send(sendBuf, sendBuf.Length);
 		}
@@ -176,7 +171,7 @@ namespace MMOClient.Game
 					break;
 				case CSPacketCommand.CSPkResReadyEnterWorld:
 					{
-						CSPkResReadyEnterWorld packet = Serializer.Deserialize<CSPkResReadyEnterWorld>(new MemoryStream(buf, 2, size - 2));
+						CSPkResReadyEnterWorld packet = Serializer.Deserialize<CSPkResReadyEnterWorld>(new MemoryStream(buf, 6, size - 6));
 						GameObjectList.Add(packet.CharacterInfo);
 						Send(CSPacketCommand.CSPkReqEnterWorld, (object)null);
 					}
@@ -185,36 +180,40 @@ namespace MMOClient.Game
 					break;
 				case CSPacketCommand.CSPkNotifyEnterGameObject:
 					{
-						CSPkNotifyEnterGameObject packet = Serializer.Deserialize<CSPkNotifyEnterGameObject>(new MemoryStream(buf, 2, size - 2));
+						CSPkNotifyEnterGameObject packet = Serializer.Deserialize<CSPkNotifyEnterGameObject>(new MemoryStream(buf, 6, size - 6));
 
 						if (packet.GameObjectInfoList != null)
 						{
 							GameObjectList.AddRange(packet.GameObjectInfoList);
 						}
 
-						LogAction("object count : " + GameObjectList.Count);
+						LogAction("enter : object count : " + GameObjectList.Count);
 					}
 					break;
 				case CSPacketCommand.CSPkNotifyLeaveGameObject:
 					{
-						CSPkNotifyLeaveGameObject packet = Serializer.Deserialize<CSPkNotifyLeaveGameObject>(new MemoryStream(buf, 2, size - 2));
+						CSPkNotifyLeaveGameObject packet = Serializer.Deserialize<CSPkNotifyLeaveGameObject>(new MemoryStream(buf, 6, size - 6));
 
-                        if (packet.HandleList != null)
-                        {
-                            foreach (long handle in packet.HandleList)
-                            {
-                                GameObjectList.Remove(GameObjectList.Find(o => o.Handle == handle));
-                            }
-                        }
+						if (packet.HandleList != null)
+						{
+							foreach (long handle in packet.HandleList)
+							{
+								GameObjectList.Remove(GameObjectList.Find(o => o.Handle == handle));
+							}
+						}
+
+						LogAction("leave : object count : " + GameObjectList.Count);
 					}
 					break;
 				case CSPacketCommand.CSPkNotifyMove:
 					{
-						CSPkNotifyMove packet = Serializer.Deserialize<CSPkNotifyMove>(new MemoryStream(buf, 2, size - 2));
+						CSPkNotifyMove packet = Serializer.Deserialize<CSPkNotifyMove>(new MemoryStream(buf, 6, size - 6));
 
 						PkGameObjectInfo gameObject = GameObjectList.FirstOrDefault(o => o.Handle == packet.Handle);
 						gameObject.MoveInfo = packet.MoveInfo;
 						gameObject.Pos = packet.MoveInfo.StartPos;
+
+						LogAction("move : object count : " + GameObjectList.Count);
 					}
 				break;
 			}

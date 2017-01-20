@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Timers;
 using MMOServer.Network;
 using Protocol;
 using SuperSocket.SocketBase;
@@ -12,8 +13,10 @@ namespace MMOServer.Game
 {
 	public class GameServer : AppServer<GameSession, BinaryRequestInfo>, IServerMessageHandler
 	{
-		public TaskExecutor TaskExecutor;
+		public TaskExecutor TaskExecutor = new TaskExecutor();
 		public World World;
+
+		private Timer m_timer;
 		
 
 		public GameServer() : base(new DefaultReceiveFilterFactory<PacketReceiveFilter, BinaryRequestInfo>())
@@ -34,7 +37,16 @@ namespace MMOServer.Game
 							worldPorts.Select(r => int.Parse(r)).Where(r => r != backendPort).ToArray(),
 							this);
 
+			m_timer = new Timer(10);
+			m_timer.Elapsed += OnTimer;
+			m_timer.Start();
+
 			return true;
+		}
+
+		private void OnTimer(object sender, ElapsedEventArgs e)
+		{
+			TaskExecutor.PushAction(() => World.Update());
 		}
 
 		public void OnMessage(string channel, string publisher, SSPacketCommand command, object packet)

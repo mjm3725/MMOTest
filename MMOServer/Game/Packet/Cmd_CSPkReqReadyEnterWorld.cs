@@ -14,7 +14,7 @@ namespace MMOServer.Game.Packet
 
 			Random r = new Random();
 
-			session.GameObject.SetPosition(r.Next(50, 250), 0, r.Next(50, 250));
+			session.GameObject.SetPosition(r.Next(50, 100), 0, r.Next(50, 100));
 
 			CSPkResReadyEnterWorld pkResReadyEnterWorld = new CSPkResReadyEnterWorld
 			{

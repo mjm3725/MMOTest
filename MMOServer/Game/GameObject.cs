@@ -90,7 +90,9 @@ namespace MMOServer.Game
 		
 		public void Move(PkMoveInfo moveInfo)
 		{
+			PrePosition = Position;
 			Position = moveInfo.StartPos;
+
 			MoveInfo = moveInfo;
 		}
 	}

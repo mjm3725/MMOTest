@@ -21,7 +21,7 @@ namespace MMOServer.Game.Packet
 
 			handle |= (long)(session.AppServer as GameServer).World.Id << 59;
 
-			session.GameObject = new GameObject { Handle = handle, Type = GameObjectType.Player, Name = packet.AccountId };
+			session.GameObject = new GameObject { Handle = handle, Type = GameObjectType.Player, Name = packet.AccountId, Session = session };
 
 			CSPkResLogin pkResLogin = new CSPkResLogin
 			{

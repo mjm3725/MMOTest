@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using ProtoBuf;
-using SharpNav.Geometry;
+
 #if !CLIENT
 using SharpNav;
+#else
+using SharpDX;
 #endif
 
 namespace Protocol
@@ -70,7 +72,6 @@ namespace Protocol
 			Z = z;
 		}
 
-#if !CLIENT
 		public static implicit operator Vector3(PkVector3 v)
 		{
 			return new Vector3(v.X, v.Y, v.Z);
@@ -80,7 +81,6 @@ namespace Protocol
 		{
 			return new PkVector3(v.X, v.Y, v.Z);
 		}
-#endif
 	}
 
 	[ProtoContract]
@@ -104,7 +104,6 @@ namespace Protocol
 			Y = y;
 		}
 
-#if !CLIENT
 		public static implicit operator Vector2(PkVector2 v)
 		{
 			return new Vector2(v.X, v.Y);
@@ -114,7 +113,6 @@ namespace Protocol
 		{
 			return new PkVector2(v.X, v.Y);
 		}
-#endif
 	}
 
 	[ProtoContract]

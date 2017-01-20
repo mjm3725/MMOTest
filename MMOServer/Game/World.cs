@@ -109,6 +109,8 @@ namespace MMOServer.Game
 
 			gameObject.Send(CSPacketCommand.CSPkResMove, pkResMove);
 
+			UpdateMoveSector(gameObject);
+
 			CSPkNotifyMove csPkNotifyMove = new CSPkNotifyMove
 			{
 				Handle = gameObject.Handle,
@@ -334,7 +336,10 @@ namespace MMOServer.Game
 
 				m_sectorManager.VisitMany(addedList, (go) => pkOthersInfo.GameObjectInfoList.Add(go.GetPkGameObjectInfo()));
 
-				gameObject.Send(CSPacketCommand.CSPkNotifyEnterGameObject, pkOthersInfo);
+				if (pkOthersInfo.GameObjectInfoList.Count > 0)
+				{
+					gameObject.Send(CSPacketCommand.CSPkNotifyEnterGameObject, pkOthersInfo);
+				}
 
 				//  사라진 섹터에 있는 오브젝트 정보를 알림
 				CSPkNotifyLeaveGameObject pkRemovedInfo = new CSPkNotifyLeaveGameObject
@@ -344,7 +349,10 @@ namespace MMOServer.Game
 
 				m_sectorManager.VisitMany(removedList, (go) => pkRemovedInfo.HandleList.Add(go.Handle));
 
-				gameObject.Send(CSPacketCommand.CSPkNotifyLeaveGameObject, pkRemovedInfo);
+				if (pkRemovedInfo.HandleList.Count > 0)
+				{
+					gameObject.Send(CSPacketCommand.CSPkNotifyLeaveGameObject, pkRemovedInfo);
+				}
 
 				// 필요없는 섹터 unsubscribe
 				UnsubscribeSector(removedList);
