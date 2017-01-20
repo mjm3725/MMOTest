@@ -157,7 +157,6 @@ namespace MMOServer.Game
 
 			m_sector[x][z].AddLast(gameObject);
 
-			Console.WriteLine(string.Format("enter({0}, {1})", x, z));
 			return m_sector[x][z].Count;
 		}
 
@@ -172,8 +171,6 @@ namespace MMOServer.Game
 
 			sector.Remove(gameObject);
 
-			Console.WriteLine(string.Format("leave"));
-
 			return sector.Count;
 		}
 
@@ -185,8 +182,6 @@ namespace MMOServer.Game
 			}
 
 			m_sector[x][z].Remove(gameObject);
-
-			Console.WriteLine(string.Format("leave({0}, {1})", x, z));
 
 			return m_sector[x][z].Count;
 		}

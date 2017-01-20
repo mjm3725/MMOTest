@@ -97,6 +97,8 @@ namespace MMOServer.Game
 			
 			gameObject.Move(packet.MoveInfo);
 
+			UpdateMoveSector(gameObject);
+
 			CSPkNotifyMove csPkNotifyMove = new CSPkNotifyMove
 											{
 												Handle = gameObject.Handle,
