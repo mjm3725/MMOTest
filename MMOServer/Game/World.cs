@@ -333,7 +333,6 @@ namespace MMOServer.Game
 			BroadcastMany(addedList, gameObject, CSPacketCommand.CSPkNotifyEnterGameObject, csPkNotifyEnter);
 
 
-			// 실제 플레이어일 경우에만 처리함
 			// 추가된 섹터에 있는 오브젝트들의 정보를 나한테 알림
 			CSPkNotifyEnterGameObject pkOthersInfo = new CSPkNotifyEnterGameObject
 			{
@@ -347,7 +346,7 @@ namespace MMOServer.Game
 				gameObject.Send(CSPacketCommand.CSPkNotifyEnterGameObject, pkOthersInfo);
 			}
 
-			//  사라진 섹터에 있는 오브젝트 정보를 알림
+			// 사라진 섹터에 있는 오브젝트 정보를 알림
 			CSPkNotifyLeaveGameObject pkRemovedInfo = new CSPkNotifyLeaveGameObject
 			{
 				HandleList = new List<long>()
