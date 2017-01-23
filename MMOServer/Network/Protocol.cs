@@ -53,6 +53,9 @@ namespace Protocol
 
 		SSPkNotifyAttack,
 		SSPkNotifyDamage,
+
+		SSPkNotifyEnterGameObjectByMove,
+		SSPkNotifyLeaveGameObjectByMove,
 	}
 
 	[ProtoContract]
@@ -261,6 +264,26 @@ namespace Protocol
 
 		[ProtoMember(2)]
 		public PkVector3 Pos;
+	}
+
+	[ProtoContract]
+	public class SSPkNotifyEnterGameObjectByMove
+	{
+		[ProtoMember(1)]
+		public PkGameObjectInfo GameObjectInfo;
+
+		[ProtoMember(2)]
+		public List<PkVector2> AddSectorList;
+	}
+
+	[ProtoContract]
+	public class SSPkNotifyLeaveGameObjectByMove
+	{
+		[ProtoMember(1)]
+		public long Handle;
+
+		[ProtoMember(2)]
+		public List<PkVector2> RemoveSectorList;
 	}
 
 	[ProtoContract]

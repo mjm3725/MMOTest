@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Protocol;
+using SharpNav;
 
 namespace MMOServer.Game
 {
@@ -22,6 +24,25 @@ namespace MMOServer.Game
 		{
 			CSPkNotifyLeaveGameObject notifyPacket = new CSPkNotifyLeaveGameObject { HandleList = new List<long> { packet.Handle } };
 			BroadcastArround(packet.Pos, CSPacketCommand.CSPkNotifyLeaveGameObject, notifyPacket, true);    
+		}
+
+		public void OnSSPkNotifyEnterGameObjectByMove(string channel, string publisher, SSPkNotifyEnterGameObjectByMove packet)
+		{
+			GameObject gameObject = new GameObject();
+			gameObject.SetPkGameObjectInfo(packet.GameObjectInfo);
+
+			CSPkNotifyEnterGameObject notifyPacket = new CSPkNotifyEnterGameObject
+			{
+				GameObjectInfoList = new List<PkGameObjectInfo> { packet.GameObjectInfo }
+			};
+
+			BroadcastMany(packet.AddSectorList.Select(v => (Vector2)v), CSPacketCommand.CSPkNotifyEnterGameObject, notifyPacket);
+		}
+
+		public void OnSSPkNotifyLeaveGameObjectByMove(string channel, string publisher, SSPkNotifyLeaveGameObjectByMove packet)
+		{
+			CSPkNotifyLeaveGameObject notifyPacket = new CSPkNotifyLeaveGameObject { HandleList = new List<long> { packet.Handle } };
+			BroadcastMany(packet.RemoveSectorList.Select(v => (Vector2)v), CSPacketCommand.CSPkNotifyLeaveGameObject, notifyPacket);
 		}
 
 		public void OnSSPkReqGameObjectList(string channel, string publisher, SSPkReqGameObjectList packet)
@@ -53,10 +74,6 @@ namespace MMOServer.Game
 			{
 				GameObject gameObject = new GameObject();
 				gameObject.SetPkGameObjectInfo(pkGameObjectInfo);
-
-				AddGameObject(gameObject);
-
-				m_sectorManager.Enter(gameObject);
 
 				CSPkNotifyEnterGameObject notifyPacket = new CSPkNotifyEnterGameObject
 				{

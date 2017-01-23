@@ -247,6 +247,14 @@ namespace MMOServer.Game
 													});
 		}
 
+		public void BroadcastMany<T>(IEnumerable<Vector2> sectorList, CSPacketCommand cmd, T packet)
+		{
+			m_sectorManager.VisitMany(sectorList, (go) =>
+			{
+				go.Send(cmd, packet);
+			});
+		}
+
 		public void SubscribeSector(IEnumerable<Vector2> sectorList)
 		{
 			List<PkVector2> newChannelList = new List<PkVector2>();
@@ -275,17 +283,7 @@ namespace MMOServer.Game
 		{
 			foreach (Vector2 channel in sectorList)
 			{
-				if (m_serverToServerManager.Unsubscribe(channel) == 0)
-				{
-					List<GameObject> removedObjList = new List<GameObject>();
-
-					m_sectorManager.ClearSector((int)channel.X, (int)channel.Y, removedObjList);
-
-					foreach (GameObject gameObject in removedObjList)
-					{
-						RemoveGameObject(gameObject);
-					}
-				}
+				m_serverToServerManager.Unsubscribe(channel);
 			}
 		}
 
@@ -366,18 +364,19 @@ namespace MMOServer.Game
 			SubscribeSector(addedList);
 
 			// 빠진 섹터에 알림. 
-			SSPkNotifyLeaveGameObject ssPkNotifyLeaveGameObject = new SSPkNotifyLeaveGameObject
+			SSPkNotifyLeaveGameObjectByMove ssPkNotifyLeaveGameObject = new SSPkNotifyLeaveGameObjectByMove
 			{
 				Handle = gameObject.Handle,
-				Pos = gameObject.PrePosition
+				RemoveSectorList = removedList.Select(v => (PkVector2)v).ToList()
 			};
 
 			m_serverToServerManager.Publish(m_sectorManager.GetSectorCoordinate(gameObject.PrePosition).ToString(), ssPkNotifyLeaveGameObject);
 
 			// 이동한 섹터에 알림. 
-			SSPkNotifyEnterGameObject ssPkNotifyEnterGameObject = new SSPkNotifyEnterGameObject
+			SSPkNotifyEnterGameObjectByMove ssPkNotifyEnterGameObject = new SSPkNotifyEnterGameObjectByMove
 			{
-				GameObjectInfo = gameObject.GetPkGameObjectInfo()
+				GameObjectInfo = gameObject.GetPkGameObjectInfo(),
+				AddSectorList = addedList.Select(v => (PkVector2)v).ToList()
 			};
 
 			m_serverToServerManager.Publish(m_sectorManager.GetSectorCoordinate(gameObject).ToString(), ssPkNotifyEnterGameObject);
