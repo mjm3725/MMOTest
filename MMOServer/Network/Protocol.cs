@@ -33,6 +33,12 @@ namespace Protocol
 		CSPkResMove,
 
 		CSPkNotifyMove,
+
+		CSPkReqAttack,
+		CSPkResAttack,
+
+		CSPkNotifyAttack,
+		CSPkNotifyDamage,
 	}
 
 	public enum SSPacketCommand
@@ -44,6 +50,9 @@ namespace Protocol
 		SSPkResGameObjectList,
 
 		SSPkNotifyMove,
+
+		SSPkNotifyAttack,
+		SSPkNotifyDamage,
 	}
 
 	[ProtoContract]
@@ -249,6 +258,9 @@ namespace Protocol
 	{
 		[ProtoMember(1)]
 		public long Handle;
+
+		[ProtoMember(2)]
+		public PkVector3 Pos;
 	}
 
 	[ProtoContract]

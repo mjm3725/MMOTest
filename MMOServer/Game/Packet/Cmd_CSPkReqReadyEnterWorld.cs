@@ -14,8 +14,6 @@ namespace MMOServer.Game.Packet
 		{
 			session.State = GameSession.SessionState.Ready;
 
-			
-
 			session.GameObject.SetPosition(s_r.Next(50, 200), 0, s_r.Next(50, 200));
 
 			CSPkResReadyEnterWorld pkResReadyEnterWorld = new CSPkResReadyEnterWorld

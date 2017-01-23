@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="Game\GameServer.cs" />
     <Compile Include="Game\GameSession.cs" />
+    <Compile Include="Game\Packet\Cmd_CSPkReqAttack.cs" />
     <Compile Include="Game\Packet\Cmd_CSPkReqEnterWorld.cs" />
     <Compile Include="Game\Packet\Cmd_CSPkReqLogin.cs" />
     <Compile Include="Game\Packet\Cmd_CSPkReqMove.cs" />
