@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Timers;
 using MMOServer.Network;
 using Protocol;
@@ -13,10 +15,10 @@ namespace MMOServer.Game
 {
 	public class GameServer : AppServer<GameSession, BinaryRequestInfo>, IServerMessageHandler
 	{
-		public TaskExecutor TaskExecutor = new TaskExecutor();
 		public World World;
 
-		private Timer m_timer;
+		private Thread m_thread;
+		private ConcurrentQueue<Action> m_queue = new ConcurrentQueue<Action>();
 		
 
 		public GameServer() : base(new DefaultReceiveFilterFactory<PacketReceiveFilter, BinaryRequestInfo>())
@@ -37,16 +39,30 @@ namespace MMOServer.Game
 							worldPorts.Select(r => int.Parse(r)).Where(r => r != backendPort).ToArray(),
 							this);
 
-			m_timer = new Timer(10);
-			m_timer.Elapsed += OnTimer;
-			m_timer.Start();
+			m_thread = new Thread(Update);
+			m_thread.Start();
 
 			return true;
 		}
 
-		private void OnTimer(object sender, ElapsedEventArgs e)
+		private void Update()
 		{
-			TaskExecutor.PushAction(() => World.Update());
+			while (true)
+			{
+				Action action;
+				while (m_queue.TryDequeue(out action))
+				{
+					action();
+				}
+
+				World.Update();
+				Thread.Sleep(1);
+			}
+		}
+
+		public void PushAction(Action action)
+		{
+			m_queue.Enqueue(action);
 		}
 
 		public void OnMessage(string channel, string publisher, SSPacketCommand command, object packet)
@@ -60,8 +76,10 @@ namespace MMOServer.Game
 				return;
 			}
 
+			Console.WriteLine("OnMesssage : " + command);
+
 			// job으로 던진 후 실행
-			TaskExecutor.PushAction(() => eventMethodInfo.Invoke(World, new[] { channel, publisher, packet }));
+			PushAction(() => eventMethodInfo.Invoke(World, new[] { channel, publisher, packet }));
 		}
 	}
 }

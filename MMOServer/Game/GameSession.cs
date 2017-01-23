@@ -22,7 +22,7 @@ namespace MMOServer.Game
 			{
 				GameServer server = AppServer as GameServer;
 
-				server.TaskExecutor.PushAction(() =>
+				server.PushAction(() =>
 				{
 					server.World.LeaveWorld(GameObject);
 				});

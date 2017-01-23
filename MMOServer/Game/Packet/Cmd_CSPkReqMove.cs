@@ -20,7 +20,7 @@ namespace MMOServer.Game.Packet
 
 			GameServer server = session.AppServer as GameServer;
 
-			server.TaskExecutor.PushAction(() =>
+			server.PushAction(() =>
 			{
 				server.World.Move(session.GameObject, packet.MoveInfo);
 			});

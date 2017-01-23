@@ -30,8 +30,8 @@ namespace MMOServer.Game
 
 		public void SetPosition(float x, float y, float z)
 		{
-			Position = new Vector3(x, y, z);
 			PrePosition = Position;
+			Position = new Vector3(x, y, z);
 		}
 
 		public void Update(float elapsedTime)

@@ -12,7 +12,7 @@ namespace MMOServer.Game.Packet
 
 			GameServer server = session.AppServer as GameServer;
 
-			server.TaskExecutor.PushAction(() =>
+			server.PushAction(() =>
 			{
 				server.World.EnterWorld(session.GameObject);
 			});

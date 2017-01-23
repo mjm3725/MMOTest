@@ -285,7 +285,7 @@ namespace MMOServer.Game
 
 		private void UpdateMoveSector(GameObject gameObject)
 		{
-			if (gameObject.PrePosition == gameObject.Position)
+			if (gameObject.MoveInfo == null || gameObject.MoveInfo.MoveState != (int)MoveState.Move)
 			{
 				return;
 			}

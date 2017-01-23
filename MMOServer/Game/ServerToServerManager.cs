@@ -71,6 +71,8 @@ namespace MMOServer.Game
 			message.Add(new ZFrame(stream.GetBuffer(), 0, (int)stream.Length));
 
 			m_zsocketPub.Send(message);
+
+			Console.WriteLine("Publish");
 		}
 
 		public int Subscribe(Vector2 channel)

@@ -85,7 +85,6 @@
     <Compile Include="Game\Packet\Cmd_CSPkReqMove.cs" />
     <Compile Include="Game\Packet\Cmd_CSPkReqReadyEnterWorld.cs" />
     <Compile Include="Game\Packet\SessionStateCommandFilter.cs" />
-    <Compile Include="Game\TaskExecutor.cs" />
     <Compile Include="Game\GameObject.cs" />
     <Compile Include="Game\ServerToServerManager.cs" />
     <Compile Include="Network\PacketCommandBase.cs" />
