@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using MMOClient.Game;
 using Protocol;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MMOClient
 {
@@ -13,8 +15,9 @@ namespace MMOClient
 		public int SizeY = 500;
 		public int SectorSize = 20;
 
-		private GameClient m_gameClient = new GameClient();
+		private List<GameClient> m_gameClients = new List<GameClient>();
 		private long m_lastTick = DateTime.Now.Ticks;
+		private Random m_rand = new Random((int)DateTime.Now.Ticks);
 
 		public Form1()
 		{
@@ -38,48 +41,100 @@ namespace MMOClient
 			}
 
 			int index = 0;
-			foreach (PkGameObjectInfo gameObjectInfo in m_gameClient.GameObjectList)
-			{
-				if (index == 0)
-				{
-					e.Graphics.FillEllipse(new SolidBrush(Color.Green), gameObjectInfo.Pos.X - 2, gameObjectInfo.Pos.Z - 2, 5, 5);
-				}
-				else
-				{
-					e.Graphics.FillEllipse(new SolidBrush(Color.DodgerBlue), gameObjectInfo.Pos.X - 2, gameObjectInfo.Pos.Z - 2, 5, 5);
-				}
 
-				index++;
+			if (m_gameClients.Count == 1)
+			{
+				foreach (PkGameObjectInfo gameObjectInfo in m_gameClients[0].GameObjectList)
+				{
+					if (index == 0)
+					{
+						e.Graphics.FillEllipse(new SolidBrush(Color.Green), gameObjectInfo.Pos.X - 2, gameObjectInfo.Pos.Z - 2, 5, 5);
+					}
+					else
+					{
+						e.Graphics.FillEllipse(new SolidBrush(Color.DodgerBlue), gameObjectInfo.Pos.X - 2, gameObjectInfo.Pos.Z - 2, 5, 5);
+					}
+
+					index++;
+				}
+			}
+			else
+			{
+				foreach(var c in m_gameClients)
+				{
+					if (c.GameObjectList.Count > 0)
+					{
+						e.Graphics.FillEllipse(new SolidBrush(Color.Green), c.GameObjectList[0].Pos.X - 2, c.GameObjectList[0].Pos.Z - 2, 5, 5);
+					}
+				}
 			}
 		}
 
 		private void timer1_Tick(object sender, System.EventArgs e)
 		{
-			long curTick = DateTime.Now.Ticks;
+			Task.Run(() =>
+			{
+				long curTick = DateTime.Now.Ticks;
 
-			m_gameClient.Update((float)(new TimeSpan(curTick - m_lastTick).TotalMilliseconds) / 1000 );
+				Parallel.ForEach(m_gameClients, (c) =>
+				{
+					c.Update((float)(new TimeSpan(curTick - m_lastTick).TotalMilliseconds) / 1000);
+				});
 
-			m_lastTick = curTick;
+				m_lastTick = curTick;
 
-			Invalidate();
+				Invalidate();
+			});
 		}
 
 		private void Form1_Load(object sender, System.EventArgs e)
 		{
-			m_gameClient.LogAction = (s) =>
-									 {
-										 textBoxLog.AppendText(s + "\n");
-									 };
+
 		}
 
 		private void Form1_MouseClick(object sender, MouseEventArgs e)
 		{
-			m_gameClient.Move(e.X, e.Y);
+			if (m_gameClients.Count > 1)
+			{
+				Parallel.ForEach(m_gameClients, (c) =>
+				{
+					if (c.GameObjectList.Count > 0 && (c.GameObjectList[0].MoveInfo == null || c.GameObjectList[0].MoveInfo.MoveState == 0))
+					{
+						c.Move(m_rand.Next(50, 200), m_rand.Next(50, 200));
+					}
+				});
+			}
+			else if (m_gameClients.Count == 1)
+			{
+				m_gameClients[0].Move(e.X, e.Y);
+			}
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			m_gameClient.Connect(int.Parse(textBox1.Text));
+			int num = int.Parse(textBoxNum.Text);
+
+			for (int i = 0; i < num; i++)
+			{
+				m_gameClients.Add(new GameClient());
+			}
+						
+			Parallel.ForEach(m_gameClients, (c) =>
+			{
+				c.LogAction = (s) =>
+				{
+					//if (textBoxLog.IsAccessible)
+					//{
+					//	textBoxLog.AppendText(s + "\n");
+					//}
+					//else
+					//{
+					//	textBoxLog.Invoke((MethodInvoker)(() => { textBoxLog.AppendText(s + "\n"); }));
+					//}
+				};
+
+				c.Connect(int.Parse(textBoxPort.Text));
+			});
 		}
 	}
 }

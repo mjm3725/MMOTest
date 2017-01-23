@@ -37,16 +37,18 @@ namespace MMOServer.Game
 			m_messageHandler = messageHandler;
 
 			m_zcontext = new ZContext();
-
+			
 			m_zsocketPub = new ZSocket(m_zcontext, ZSocketType.PUB);
 			m_zsocketPub.Bind("tcp://*:" + bindPort);
+			m_zsocketPub.Immediate = true;
 
 			m_publishKey = "S" + bindPort;	// 내 식별자
 
 			m_zsocketSub = new ZSocket(m_zcontext, ZSocketType.SUB);
 
 			m_zsocketSub.Subscribe(m_publishKey);	//unicast채널
-			m_zsocketSub.Subscribe("A");			//sector동기화가 아닌 broadcast채널
+			m_zsocketSub.Subscribe("A");            //sector동기화가 아닌 broadcast채널
+			m_zsocketSub.Immediate = true;
 
 			for (int i = 0; i < backendPorts.Length; i++)
 			{
@@ -72,7 +74,7 @@ namespace MMOServer.Game
 
 			m_zsocketPub.Send(message);
 
-			Console.WriteLine("Publish");
+			Console.WriteLine("Publish : " + channel + " > " + commandEnum);
 		}
 
 		public int Subscribe(Vector2 channel)
@@ -120,23 +122,30 @@ namespace MMOServer.Game
 
 		public void Update()
 		{
-			ZError error;
-			ZMessage message = m_zsocketSub.ReceiveMessage(ZSocketFlags.DontWait, out error);
-
-			if (message != null)
+			while (true)
 			{
-				SSPacketCommand command = (SSPacketCommand)message[2].ReadInt16();
+				ZError error;
+				ZMessage message = m_zsocketSub.ReceiveMessage(ZSocketFlags.DontWait, out error);
 
-				Type packetType = Type.GetType("Protocol." + command);
-
-				if (packetType == null)
+				if (message != null)
 				{
-					return;
+					SSPacketCommand command = (SSPacketCommand)message[2].ReadInt16();
+
+					Type packetType = Type.GetType("Protocol." + command);
+
+					if (packetType == null)
+					{
+						return;
+					}
+
+					object packet = Serializer.NonGeneric.Deserialize(packetType, message[2]);
+
+					m_messageHandler.OnMessage(message[0].ReadString(), message[1].ReadString(), command, packet);
 				}
-
-				object packet = Serializer.NonGeneric.Deserialize(packetType, message[2]);
-
-				m_messageHandler.OnMessage(message[0].ReadString(), message[1].ReadString(), command, packet);					
+				else
+				{
+					break;
+				}
 			}
 		}
 	}

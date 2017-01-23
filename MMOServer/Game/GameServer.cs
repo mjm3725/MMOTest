@@ -76,7 +76,7 @@ namespace MMOServer.Game
 				return;
 			}
 
-			Console.WriteLine("OnMesssage : " + command);
+			Console.WriteLine("OnMesssage : " + channel + " : " + publisher + " > " + command);
 
 			// job으로 던진 후 실행
 			PushAction(() => eventMethodInfo.Invoke(World, new[] { channel, publisher, packet }));

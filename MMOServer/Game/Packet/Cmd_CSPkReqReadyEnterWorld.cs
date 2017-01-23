@@ -16,7 +16,7 @@ namespace MMOServer.Game.Packet
 
 			
 
-			session.GameObject.SetPosition(s_r.Next(50, 100), 0, s_r.Next(50, 100));
+			session.GameObject.SetPosition(s_r.Next(50, 200), 0, s_r.Next(50, 200));
 
 			CSPkResReadyEnterWorld pkResReadyEnterWorld = new CSPkResReadyEnterWorld
 			{
