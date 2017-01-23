@@ -8,13 +8,15 @@ namespace MMOServer.Game.Packet
 	[SessionStateCommandFilter(GameSession.SessionState.Logined)]
 	public class Cmd_CSPkReqReadyEnterWorld : PacketCommandBase<GameSession>
 	{
+		public static Random s_r = new Random((int)DateTime.Now.Ticks);
+
 		public override void ExecuteCommand(GameSession session, BinaryRequestInfo requestInfo)
 		{
 			session.State = GameSession.SessionState.Ready;
 
-			Random r = new Random();
+			
 
-			session.GameObject.SetPosition(r.Next(50, 100), 0, r.Next(50, 100));
+			session.GameObject.SetPosition(s_r.Next(50, 100), 0, s_r.Next(50, 100));
 
 			CSPkResReadyEnterWorld pkResReadyEnterWorld = new CSPkResReadyEnterWorld
 			{
