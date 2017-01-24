@@ -123,14 +123,14 @@ namespace MMOClient
 			{
 				c.LogAction = (s) =>
 				{
-					//if (textBoxLog.IsAccessible)
-					//{
-					//	textBoxLog.AppendText(s + "\n");
-					//}
-					//else
-					//{
-					//	textBoxLog.Invoke((MethodInvoker)(() => { textBoxLog.AppendText(s + "\n"); }));
-					//}
+					if (textBoxLog.IsAccessible)
+					{
+						textBoxLog.AppendText(s + "\n");
+					}
+					else
+					{
+						textBoxLog.Invoke((MethodInvoker)(() => { textBoxLog.AppendText(s + "\n"); }));
+					}
 				};
 
 				c.Connect(int.Parse(textBoxPort.Text));
